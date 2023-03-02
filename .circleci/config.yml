@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/mobile-automation-project
+    working_directory: ~/appiumCircleCI
     docker:
       - image: circleci/android:api-30
     environment:
