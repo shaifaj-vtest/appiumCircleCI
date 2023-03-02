@@ -1,51 +1,15 @@
-version: 2
+version: 2.1
+
+orbs:
+  browserstack: browserstack/selenium@1.5.0
+
 jobs:
   build:
-    working_directory: ~/code
-    docker:
-      - image: circleci/android:api-25-alpha
-    environment:
-      JVM_OPTS: -Xmx3200m
+    executor: browserstack/default
     steps:
       - checkout
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "pom.xml" }}
-      # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: v1-dependencies-{{ checksum "pom.xml" }}
-
-      # Generate apk
-      - run: 
-          name: Start appium server
-          command: appium &
-
-      # Upload app to BrowserStack and set app url in an environment variable.
-      # Here replace browserstack_android_sample-debug.apk with name of your apk.
+      - browserstack/install
       - run:
-          name : App upload and Set app id in environment variable.
-          command : |
-            APP_UPLOAD_RESPONSE=$(curl -u "$BROWSERSTACK_USERNAME:$BROWSERSTACK_ACCESS_KEY" -X POST https://api-cloud.browserstack.com/app-automate/upload -F "file=@D:/apps/app-release.apk")
-            echo "APP_UPLOAD_RESPONSE :  " + $APP_UPLOAD_RESPONSE
-            APP_ID=$(echo $APP_UPLOAD_RESPONSE | jq -r ".app_url")
-            if [ $APP_ID != null ]; then
-              echo "Apk uploaded to BrowserStack with app id : ",$APP_ID;
-              echo "export BROWSERSTACK_APP_ID=$APP_ID" >> $BASH_ENV;
-              source $BASH_ENV;
-              echo "Setting value of BROWSERSTACK_APP_ID in environment variables to  ",$APP_ID;
-            else
-              UPLOAD_ERROR_MESSAGE=$(echo $APP_UPLOAD_RESPONSE | jq -r ".error")
-              echo "App upload failed, reason : ",$UPLOAD_ERROR_MESSAGE
-              exit 1;
-            fi
-      # run tests!
-      - run: mvn test
-      
-      - store_artifacts:
-          path: target/surefire-reports
-          destination: tr1
-      - store_test_results:
-          path: target/surefire-reports
+          name: Run tests on BrowserStack
+          command: |
+            mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testng.xml -Dbrowserstack.username=$BROWSERSTACK_USERNAME -Dbrowserstack.accessKey=$BROWSERSTACK_ACCESS_KEY -Dbrowserstack.appiumVersion=1.21.0 -Dbrowserstack.device=Google Pixel 4 -Dbrowserstack.os.version=11.0
