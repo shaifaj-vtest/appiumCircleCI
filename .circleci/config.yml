@@ -1,26 +1,50 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/appiumCircleCI
+    working_directory: ~/project
     docker:
-      - image: circleci/android:api-30
+      - image: circleci/android:api-25-alpha
     environment:
-      ANDROID_HOME: /Users/USEr/AppData/Local/Android/Sdk
-      PATH: $PATH:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
+      JVM_OPTS: -Xmx3200m
     steps:
       - checkout
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "pom.xml" }}
-            - v1-dependencies-
+          - v1-dependencies-{{ checksum "pom.xml" }}
+      # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
       - save_cache:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
+
+      # Generate apk
       - run: 
           name: Start appium server
           command: appium &
-      - run: adb devices
-      - run: adb install -r app/build/outputs/apk/debug/app-release.apk
-      - run: .mvn test
 
+      # Upload app to BrowserStack and set app url in an environment variable.
+      # Here replace browserstack_android_sample-debug.apk with name of your apk.
+      - run:
+          name : App upload and Set app id in environment variable.
+          command : |
+            APP_UPLOAD_RESPONSE=$(curl -u "shaifajmulla_AcjsR0:QhgbDupXr7RWdx6UQdQf" -X POST https://api-cloud.browserstack.com/app-automate/upload -F "file=@app/build/outputs/apk/debug/app-debug.apk")
+            APP_ID=$(echo $APP_UPLOAD_RESPONSE | jq -r ".app_url")
+            if [ $APP_ID != null ]; then
+              echo "Apk uploaded to BrowserStack with app id : ",$APP_ID;
+              echo "export BROWSERSTACK_APP_ID=$APP_ID" &gt;&gt; $BASH_ENV;
+              source $BASH_ENV;
+              echo "Setting value of BROWSERSTACK_APP_ID in environment variables to  ",$APP_ID;
+            else
+              UPLOAD_ERROR_MESSAGE=$(echo $APP_UPLOAD_RESPONSE | jq -r ".error")
+              echo "App upload failed, reason : ",$UPLOAD_ERROR_MESSAGE
+              exit 1;
+            fi
+      # run tests!
+      - run: mvn test
+      
+      - store_artifacts:
+          path: target/surefire-reports
+          destination: tr1
+      - store_test_results:
+          path: target/surefire-reports
