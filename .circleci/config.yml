@@ -1,12 +1,26 @@
-version: 2.1
-
+version: 2
 jobs:
   build:
-    executor: browserstack/default
+    working_directory: ~/mobile-automation-project
+    docker:
+      - image: circleci/android:api-30
+    environment:
+      ANDROID_HOME: /Users/USEr/AppData/Local/Android/Sdk
+      PATH: $PATH:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools
     steps:
       - checkout
-      - browserstack/install
-      - run:
-          name: Run tests on BrowserStack
-          command: |
-            mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/testng.xml -Dbrowserstack.username=$BROWSERSTACK_USERNAME -Dbrowserstack.accessKey=$BROWSERSTACK_ACCESS_KEY -Dbrowserstack.appiumVersion=1.21.0 -Dbrowserstack.device=Google Pixel 4 -Dbrowserstack.os.version=11.0
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "pom.xml" }}
+            - v1-dependencies-
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+      - run: 
+          name: Start appium server
+          command: appium &
+      - run: adb devices
+      - run: adb install -r app/build/outputs/apk/debug/app-release.apk
+      - run: .mvn test
+
