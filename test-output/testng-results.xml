@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results ignored="0" total="1" passed="1" failed="0" skipped="0">
+  <reporter-output>
+  </reporter-output>
+  <suite started-at="2023-03-02T10:46:29 IST" name="Suite" finished-at="2023-03-02T10:47:08 IST" duration-ms="39778">
+    <groups>
+    </groups>
+    <test started-at="2023-03-02T10:46:29 IST" name="Google_Pixel_3" finished-at="2023-03-02T10:47:08 IST" duration-ms="39778">
+      <class name="com.qa.tests.LoginTests">
+        <test-method is-config="true" signature="beforeTest(java.lang.String)[pri:0, instance:com.qa.tests.LoginTests@66f57048]" started-at="2023-03-02T10:46:29 IST" name="beforeTest" finished-at="2023-03-02T10:46:54 IST" duration-ms="25700" status="PASS">
+          <params>
+            <param index="0">
+              <value>
+                <![CDATA[1]]>
+              </value>
+            </param>
+          </params>
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- beforeTest -->
+        <test-method signature="TC01_VerifyTheLoginWithValidCredentials()[pri:1, instance:com.qa.tests.LoginTests@66f57048]" started-at="2023-03-02T10:46:54 IST" name="TC01_VerifyTheLoginWithValidCredentials" finished-at="2023-03-02T10:47:06 IST" duration-ms="12052" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- TC01_VerifyTheLoginWithValidCredentials -->
+        <test-method is-config="true" signature="quit()[pri:0, instance:com.qa.tests.LoginTests@66f57048]" started-at="2023-03-02T10:47:06 IST" name="quit" finished-at="2023-03-02T10:47:08 IST" duration-ms="1946" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- quit -->
+      </class> <!-- com.qa.tests.LoginTests -->
+    </test> <!-- Google_Pixel_3 -->
+  </suite> <!-- Suite -->
+</testng-results>
